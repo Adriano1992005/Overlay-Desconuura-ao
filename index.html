@@ -1,32 +1,46 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Overlay Ordem Paranormal</title>
+  <meta charset="UTF-8">
+  <title>Overlay Desconjuração</title>
+  <link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
       background: transparent;
-      font-family: Arial, sans-serif;
+      font-family: 'Creepster', cursive;
       color: white;
-      user-select: none;
-    }
-    .container {
-      position: absolute;
-      top: 20px;
-      right: 20px;
       display: flex;
-      gap: 20px;
       align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    .menu {
+      text-align: center;
+    }
+    .menu button {
+      font-family: 'Creepster', cursive;
+      font-size: 32px;
+      padding: 15px 30px;
+      margin: 10px;
+      cursor: pointer;
+      background: black;
+      border: 2px solid red;
+      color: white;
+      border-radius: 10px;
+      text-shadow: 0 0 10px red, 0 0 20px red;
+    }
+    .player {
+      position: relative;
+      display: inline-block;
     }
     .portrait {
-      width: 160px;
-      height: 160px;
-      border-radius: 12px;
+      width: 300px;
+      height: 200px;
+      background: black;
       overflow: hidden;
-      background: rgba(0,0,0,0.3);
-      box-shadow: 0 0 30px rgba(0,0,0,0.6);
-      position: relative;
+      border-radius: 12px;
+      box-shadow: 0 0 30px rgba(0,0,0,0.7);
     }
     .portrait img {
       width: 100%;
@@ -34,147 +48,114 @@
       object-fit: cover;
     }
     .stats {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 5px;
     }
     .stat {
-      min-width: 200px;
-      padding: 12px;
-      border-radius: 12px;
-      background: rgba(0,0,0,0.5);
-      box-shadow: 0 0 20px rgba(0,0,0,0.6);
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .stat label {
-      font-size: 12px;
-      letter-spacing: 2px;
-      opacity: 0.8;
-    }
-    .stat input {
-      width: 80px;
-      font-size: 22px;
+      font-size: 60px;
       font-weight: bold;
-      text-align: center;
-      background: transparent;
-      border: none;
-      color: white;
-    }
-    .controls button {
-      padding: 4px 8px;
-      margin: 2px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      background: rgba(255,255,255,0.1);
-      color: white;
-    }
-    .big-stats {
-      position: absolute;
-      left: 20px;
-      bottom: 20px;
-      display: flex;
-      gap: 40px;
-    }
-    .big-stat {
-      text-align: center;
-    }
-    .big-stat label {
-      font-size: 18px;
-      opacity: 0.9;
-      letter-spacing: 2px;
-    }
-    .big-stat .value {
-      font-size: 88px;
-      font-weight: 900;
-      padding: 8px 20px;
-      border-radius: 14px;
       color: white;
     }
     .vida {
-      border: 2px solid red;
-      text-shadow: 0 0 10px red, 0 0 30px red;
-      box-shadow: 0 0 40px red;
+      text-shadow: 0 0 10px red, 0 0 25px red, 0 0 50px red;
     }
     .sanidade {
-      border: 2px solid #00b7ff;
-      text-shadow: 0 0 10px #00b7ff, 0 0 30px #00b7ff;
-      box-shadow: 0 0 40px #00b7ff;
+      text-shadow: 0 0 10px #00b7ff, 0 0 25px #00b7ff, 0 0 50px #00b7ff;
+    }
+    .controls {
+      margin-top: 10px;
+    }
+    .controls button {
+      margin-right: 5px;
+      padding: 5px 10px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: white;
+      cursor: pointer;
+      border-radius: 6px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="portrait">
-      <img id="portrait" src="https://via.placeholder.com/160x160.png?text=Portrait" alt="portrait">
-      <div class="controls" style="position:absolute;bottom:5px;left:5px;">
-        <button onclick="changePortrait('normal')">1</button>
-        <button onclick="changePortrait('medo')">2</button>
-        <button onclick="changePortrait('morrendo')">3</button>
-        <input type="file" id="fileInput" style="display:none" onchange="uploadPortrait(event)">
-        <button onclick=\"document.getElementById('fileInput').click()\">Upload</button>
+  <div id="menu" class="menu">
+    <h1>Escolha seu Jogador</h1>
+    <button onclick="enter(1)">Jogador 1</button>
+    <button onclick="enter(2)">Jogador 2</button>
+    <button onclick="enter(3)">Jogador 3</button>
+    <button onclick="enter(4)">Jogador 4</button>
+    <button onclick="enter(5)">Jogador 5</button>
+  </div>
+
+  <div id="overlay" style="display:none;">
+    <div class="player">
+      <div class="portrait">
+        <img id="portrait" src="https://via.placeholder.com/300x200.png?text=Portrait">
       </div>
-    </div>
-    <div class="stats">
-      <div class="stat">
-        <label>VIDA</label>
-        <div>
-          <button onclick="setLife(life-1)">-</button>
-          <input type="number" id="lifeInput" value="10" onchange="setLife(this.value)">
-          <button onclick="setLife(life+1)">+</button>
-        </div>
+      <div class="stats">
+        <div id="vida" class="stat vida">10</div>
+        <div id="sanidade" class="stat sanidade">10</div>
       </div>
-      <div class="stat">
-        <label>SANIDADE</label>
-        <div>
-          <button onclick="setSanidade(sanidade-1)">-</button>
-          <input type="number" id="sanidadeInput" value="10" onchange="setSanidade(this.value)">
-          <button onclick="setSanidade(sanidade+1)">+</button>
-        </div>
+      <div class="controls">
+        Vida: <button onclick="change('vida', -1)">-</button><button onclick="change('vida', 1)">+</button>
+        Sanidade: <button onclick="change('sanidade', -1)">-</button><button onclick="change('sanidade', 1)">+</button>
+        <br>
+        <input type="file" id="fileInput" onchange="uploadPortrait(event)">
       </div>
     </div>
   </div>
-  <div class="big-stats">
-    <div class="big-stat">
-      <label>VIDA</label>
-      <div id="lifeDisplay" class="value vida">10</div>
-    </div>
-    <div class="big-stat">
-      <label>SANIDADE</label>
-      <div id="sanidadeDisplay" class="value sanidade">10</div>
-    </div>
-  </div>
+
   <script>
-    let life = 10;
-    let sanidade = 10;
-    let portraits = {
-      normal: "https://via.placeholder.com/160x160.png?text=Normal",
-      medo: "https://via.placeholder.com/160x160.png?text=Medo",
-      morrendo: "https://via.placeholder.com/160x160.png?text=Morrendo"
-    };
-    function setLife(val){
-      life = Math.max(0, parseInt(val));
-      document.getElementById('lifeInput').value = life;
-      document.getElementById('lifeDisplay').textContent = life;
+    let playerId = null;
+
+    function enter(id) {
+      window.location.search = "?player=" + id;
     }
-    function setSanidade(val){
-      sanidade = Math.max(0, parseInt(val));
-      document.getElementById('sanidadeInput').value = sanidade;
-      document.getElementById('sanidadeDisplay').textContent = sanidade;
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("player")) {
+      playerId = params.get("player");
+      document.getElementById("menu").style.display = "none";
+      document.getElementById("overlay").style.display = "block";
     }
-    function changePortrait(type){
-      document.getElementById('portrait').src = portraits[type];
+
+    function save(key, value) {
+      if (!playerId) return;
+      localStorage.setItem(playerId + "_" + key, value);
     }
-    function uploadPortrait(event){
+
+    function load(key, def) {
+      if (!playerId) return def;
+      return localStorage.getItem(playerId + "_" + key) || def;
+    }
+
+    function change(id, delta) {
+      const el = document.getElementById(id);
+      let val = parseInt(el.textContent) + delta;
+      if (val < 0) val = 0;
+      el.textContent = val;
+      save(id, val);
+    }
+
+    function uploadPortrait(event) {
       const file = event.target.files[0];
-      if(!file) return;
+      if (!file) return;
       const reader = new FileReader();
       reader.onload = e => {
-        document.getElementById('portrait').src = e.target.result;
+        document.getElementById("portrait").src = e.target.result;
+        save("portrait", e.target.result);
       };
       reader.readAsDataURL(file);
+    }
+
+    window.onload = () => {
+      if (!playerId) return;
+      document.getElementById("vida").textContent = load("vida", 10);
+      document.getElementById("sanidade").textContent = load("sanidade", 10);
+      document.getElementById("portrait").src = load("portrait", "https://via.placeholder.com/300x200.png?text=Portrait");
     }
   </script>
 </body>
