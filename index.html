@@ -2,165 +2,153 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Overlay RPG Ordem Paranormal</title>
+<title>Base da Ordem - Overlay RPG</title>
 <style>
-  body {
+  html, body {
     margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    background: transparent; /* OBS friendly */
     font-family: Arial, sans-serif;
-    background: #111;
+  }
+
+  body {
+    position: relative;
     color: #fff;
-    text-align: center;
   }
 
-  #playerSelector {
-    margin: 20px 0;
+  /* Fundo base da Ordem */
+  #background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 50% 50%, #0a0a0a, #111);
+    z-index: 0;
+    overflow: hidden;
   }
 
-  button.selectPlayer {
-    margin: 2px;
-    padding: 6px 12px;
-    font-size: 14px;
+  /* Luzes e efeitos místicos */
+  .light {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(255,0,255,0.2), transparent 70%);
+    top: 20%;
+    left: 30%;
+    transform: rotate(45deg);
+    animation: pulse 6s infinite alternate;
   }
 
-  #overlay {
-    display: inline-block;
-    width: 250px;
-    border: 2px solid #444;
-    border-radius: 10px;
+  .light2 {
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(0,255,255,0.15), transparent 60%);
+    top: 50%;
+    left: 60%;
+    transform: rotate(-30deg);
+    animation: pulse 7s infinite alternate;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1) rotate(0deg); opacity: 0.4; }
+    100% { transform: scale(1.1) rotate(10deg); opacity: 0.6; }
+  }
+
+  /* Números neon flutuantes */
+  .number {
+    position: absolute;
+    font-size: 40px;
+    font-weight: bold;
+    color: #0ff;
+    text-shadow: 0 0 10px #0ff, 0 0 20px #0ff, 0 0 40px #0ff;
+    animation: float 5s infinite linear;
+  }
+
+  @keyframes float {
+    0% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-50px) rotate(10deg); }
+    100% { transform: translateY(0px) rotate(0deg); }
+  }
+
+  /* Menu de configurações */
+  #menu {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.6);
     padding: 10px;
-    background: #222;
-    text-align: center;
-  }
-
-  #portrait {
-    width: 200px;
-    height: 200px;
     border-radius: 10px;
-    cursor: pointer;
-    object-fit: cover;
+    z-index: 10;
   }
 
-  .stats {
-    margin-top: 10px;
-    font-size: 18px;
-  }
-
-  .pe {
-    margin-top: 5px;
-    font-size: 12px;
-    color: #ffcc00;
-  }
-
-  #controls {
-    margin-top: 10px;
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-  }
-
-  .control-group {
-    margin: 5px;
-  }
-
-  button {
+  #menu button {
     margin: 2px;
-    padding: 4px 8px;
-    font-size: 14px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    background: #222;
+    color: #0ff;
   }
+
 </style>
 </head>
 <body>
 
-<h2>Overlay RPG - Ordem Paranormal</h2>
-
-<div id="playerSelector">
-  <strong>Selecionar Jogador:</strong>
-  <button class="selectPlayer" onclick="selectPlayer(0)">Jogador 1</button>
-  <button class="selectPlayer" onclick="selectPlayer(1)">Jogador 2</button>
-  <button class="selectPlayer" onclick="selectPlayer(2)">Jogador 3</button>
-  <button class="selectPlayer" onclick="selectPlayer(3)">Jogador 4</button>
-  <button class="selectPlayer" onclick="selectPlayer(4)">Jogador 5</button>
+<div id="background">
+  <div class="light"></div>
+  <div class="light2"></div>
 </div>
 
-<div id="overlay">
-  <img id="portrait" src="normal.jpg" alt="Portrait do Jogador">
-  <div class="stats">
-    HP: <span id="hp">10</span> | SAN: <span id="san">10</span>
-  </div>
-  <div class="pe">
-    PE: <span id="pe">3</span>
-  </div>
-  <div id="controls">
-    <div class="control-group">
-      <strong>HP</strong><br>
-      <button onclick="changeStat('hp',1)">+1</button>
-      <button onclick="changeStat('hp',-1)">-1</button>
-    </div>
-    <div class="control-group">
-      <strong>SAN</strong><br>
-      <button onclick="changeStat('san',1)">+1</button>
-      <button onclick="changeStat('san',-1)">-1</button>
-    </div>
-    <div class="control-group">
-      <strong>PE</strong><br>
-      <button onclick="changeStat('pe',1)">+1</button>
-      <button onclick="changeStat('pe',-1)">-1</button>
-    </div>
-    <div class="control-group">
-      <strong>Portrait</strong><br>
-      <button onclick="changePortrait('normal')">Normal</button>
-      <button onclick="changePortrait('medo')">Medo</button>
-      <button onclick="changePortrait('morrendo')">Morrendo</button>
-    </div>
-  </div>
+<div id="menu">
+  <strong>Configurações:</strong><br>
+  <button onclick="toggleNumbers()">Mostrar/Ocultar Números</button>
+  <button onclick="toggleLights()">Mostrar/Ocultar Luzes</button>
 </div>
 
 <script>
-  // Dados de 5 jogadores
-  const players = [
-    {hp:10, san:10, pe:3, portrait:'normal'},
-    {hp:10, san:10, pe:3, portrait:'normal'},
-    {hp:10, san:10, pe:3, portrait:'normal'},
-    {hp:10, san:10, pe:3, portrait:'normal'},
-    {hp:10, san:10, pe:3, portrait:'normal'}
-  ];
-
-  let currentPlayer = 0;
-  const portraitStates = ['normal', 'medo', 'morrendo'];
-
-  function selectPlayer(index) {
-    currentPlayer = index;
-    updateOverlay();
+  // Criar números neon flutuantes
+  const numberCount = 30;
+  const numbers = [];
+  for(let i=0; i<numberCount; i++){
+    const num = document.createElement('div');
+    num.className = 'number';
+    num.innerText = Math.floor(Math.random()*10);
+    num.style.top = Math.random()*window.innerHeight + 'px';
+    num.style.left = Math.random()*window.innerWidth + 'px';
+    num.style.fontSize = 20 + Math.random()*30 + 'px';
+    document.body.appendChild(num);
+    numbers.push(num);
   }
 
-  function changeStat(stat, amount) {
-    players[currentPlayer][stat] += amount;
-    if (players[currentPlayer][stat] < 0) players[currentPlayer][stat] = 0;
-    updateOverlay();
+  let numbersVisible = true;
+  let lightsVisible = true;
+
+  function toggleNumbers(){
+    numbersVisible = !numbersVisible;
+    numbers.forEach(n => n.style.display = numbersVisible ? 'block' : 'none');
   }
 
-  function changePortrait(state) {
-    players[currentPlayer].portrait = state;
-    updateOverlay();
+  function toggleLights(){
+    lightsVisible = !lightsVisible;
+    document.querySelector('.light').style.display = lightsVisible ? 'block' : 'none';
+    document.querySelector('.light2').style.display = lightsVisible ? 'block' : 'none';
   }
 
-  // Clicar no portrait alterna entre os estados
-  document.getElementById('portrait').addEventListener('click', () => {
-    let current = portraitStates.indexOf(players[currentPlayer].portrait);
-    current = (current + 1) % portraitStates.length;
-    players[currentPlayer].portrait = portraitStates[current];
-    updateOverlay();
-  });
+  // Atualiza posição dos números flutuantes
+  setInterval(() => {
+    numbers.forEach(n => {
+      let top = parseFloat(n.style.top);
+      top -= 0.5; // velocidade
+      if(top < -50) top = window.innerHeight;
+      n.style.top = top + 'px';
+    });
+  }, 50);
 
-  function updateOverlay() {
-    document.getElementById('hp').innerText = players[currentPlayer].hp;
-    document.getElementById('san').innerText = players[currentPlayer].san;
-    document.getElementById('pe').innerText = players[currentPlayer].pe;
-    document.getElementById('portrait').src = players[currentPlayer].portrait + '.jpg';
-  }
-
-  // Inicializa overlay
-  updateOverlay();
 </script>
 
 </body>
