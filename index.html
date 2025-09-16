@@ -2,190 +2,236 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Overlay RPG Ordem Paranormal</title>
+<title>Overlay RPG - Ordem Paranormal</title>
 <style>
-  html, body {
+  body {
     margin: 0;
-    padding: 0;
-    background: transparent; /* OBS-friendly */
-    font-family: 'Courier New', monospace;
-    color: #fff;
-    overflow: hidden;
-  }
-
-  #overlay-container {
-    width: 400px;
-    margin: 20px auto;
+    font-family: 'Arial', sans-serif;
+    background: transparent;
+    color: white;
     display: flex;
     align-items: center;
     justify-content: flex-start;
+    height: 100vh;
+  }
+
+  .overlay-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  /* Portrait */
+  .portrait-container {
     position: relative;
+    width: 200px;
+    height: 300px;
   }
-
-  /* Portrait estilo Desconjuração */
-  #portrait {
-    width: 120px;
-    height: 120px;
-    border-radius: 8px;
+  .portrait-container img {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    border: 3px solid #000;
-    margin-right: 15px;
-    background: #111;
-    cursor: pointer;
+    border: 2px solid white;
+    border-radius: 10px;
   }
 
-  /* Stats neon/sangrento à direita */
-  .stats {
+  /* Status Numbers */
+  .status-container {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    gap: 10px;
   }
-
-  .stat {
-    font-size: 28px;
+  .status {
+    font-size: 36px;
     font-weight: bold;
-    text-shadow:
-      0 0 3px #ff0000,
-      0 0 5px #ff0000,
-      0 0 10px #ff5555;
-    margin: 2px 0;
-    text-align: right;
+    text-shadow: 0 0 10px #fff, 0 0 20px #ff0000;
   }
-
-  .stat.hp { color: #ff5555; } /* Vida */
-  .stat.san { color: #55ffff; } /* Sanidade */
-
-  /* PE simples embaixo */
+  .sanity {
+    text-shadow: 0 0 10px #fff, 0 0 20px #8000ff;
+  }
   .pe {
-    font-size: 20px;
-    color: #ffcc00;
-    text-align: right;
+    font-size: 16px;
+    text-align: center;
   }
 
-  /* Menu de configurações */
-  #menu {
-    position: absolute;
+  /* Config menu */
+  .config-menu {
+    position: fixed;
     top: 10px;
     right: 10px;
-    background: rgba(0,0,0,0.7);
-    padding: 10px;
+    background: rgba(0,0,0,0.8);
+    padding: 15px;
     border-radius: 10px;
-    z-index: 10;
-  }
-
-  #menu button {
-    margin: 2px;
-    padding: 4px 8px;
-    border-radius: 5px;
-    border: none;
-    cursor: pointer;
-    background: #222;
-    color: #0ff;
-  }
-
-  #menu input[type="file"] {
     display: none;
+    flex-direction: column;
+    gap: 10px;
+    color: white;
+    z-index: 1000;
+  }
+  .config-menu label {
+    display: block;
+    margin-bottom: 5px;
+  }
+  .config-menu input[type="number"], .config-menu input[type="file"] {
+    width: 100%;
+  }
+
+  .config-toggle {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    background: #222;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 1001;
+  }
+
+  .state-buttons button {
+    margin-right: 5px;
+    margin-top: 5px;
   }
 </style>
 </head>
 <body>
 
-<!-- Jogador Selector -->
-<div id="player-selector" style="text-align:center; margin-bottom:10px;">
-  <strong>Selecionar Jogador:</strong>
-  <button onclick="selectPlayer(0)" style="background:#ff5555;color:#fff;">Jogador 1</button>
-  <button onclick="selectPlayer(1)" style="background:#55ff55;color:#000;">Jogador 2</button>
-  <button onclick="selectPlayer(2)" style="background:#5555ff;color:#fff;">Jogador 3</button>
-  <button onclick="selectPlayer(3)" style="background:#ff55ff;color:#000;">Jogador 4</button>
-  <button onclick="selectPlayer(4)" style="background:#ffaa00;color:#000;">Jogador 5</button>
-</div>
-
-<div id="overlay-container">
-  <img id="portrait" src="portrait_normal.png" alt="Portrait do Jogador">
-  <div class="stats">
-    <div class="stat hp">12/12</div>
-    <div class="stat san">43/45</div>
-    <div class="pe">PE: 3</div>
+<div class="overlay-container">
+  <div class="portrait-container">
+    <img id="portrait" src="" alt="Portrait">
+  </div>
+  <div class="status-container">
+    <div class="status" id="vida">Vida: 0/0</div>
+    <div class="status sanity" id="sanidade">Sanidade: 0/0</div>
+    <div class="pe" id="pe">PE: 0/0</div>
   </div>
 </div>
 
-<!-- Menu -->
-<div id="menu">
-  <strong>Configurações</strong><br>
-  <button onclick="changeStat('hp',1)">+HP</button>
-  <button onclick="changeStat('hp',-1)">-HP</button><br>
-  <button onclick="changeStat('san',1)">+SAN</button>
-  <button onclick="changeStat('san',-1)">-SAN</button><br>
-  <button onclick="changeStat('pe',1)">+PE</button>
-  <button onclick="changeStat('pe',-1)">-PE</button><br>
-  <button onclick="document.getElementById('portraitInput').click()">Carregar Portrait</button>
-  <input type="file" id="portraitInput" accept="image/*" onchange="loadPortrait(event)">
-  <br>
-  <button onclick="changePortrait('normal')">Normal</button>
-  <button onclick="changePortrait('medo')">Medo</button>
-  <button onclick="changePortrait('morrendo')">Morrendo</button>
+<div class="config-toggle">Configurações</div>
+
+<div class="config-menu" id="configMenu">
+  <h3>Configurações do Jogador</h3>
+
+  <!-- Portrait States -->
+  <label>Upload Portrait Normal:</label>
+  <input type="file" id="portraitNormal" accept="image/*">
+  <label>Upload Portrait Com Medo:</label>
+  <input type="file" id="portraitFear" accept="image/*">
+  <label>Upload Portrait Morrendo:</label>
+  <input type="file" id="portraitDead" accept="image/*">
+
+  <div class="state-buttons">
+    <button onclick="setPortraitState('normal')">Normal</button>
+    <button onclick="setPortraitState('fear')">Com Medo</button>
+    <button onclick="setPortraitState('dead')">Morrendo</button>
+  </div>
+
+  <!-- Valores máximos -->
+  <label>Vida Máxima:</label>
+  <input type="number" id="vidaMax" min="1" value="20">
+  <label>Sanidade Máxima:</label>
+  <input type="number" id="sanidadeMax" min="1" value="20">
+  <label>PE Máximo:</label>
+  <input type="number" id="peMax" min="0" value="5">
+
+  <!-- Valores atuais -->
+  <label>Vida Atual:</label>
+  <input type="number" id="vidaAtual" min="0" value="20">
+  <label>Sanidade Atual:</label>
+  <input type="number" id="sanidadeAtual" min="0" value="20">
+  <label>PE Atual:</label>
+  <input type="number" id="peAtual" min="0" value="5">
+
+  <button onclick="updateValues()">Aplicar</button>
 </div>
 
 <script>
-  const players = [
-    {hp:12, maxHp:12, san:43, maxSan:45, pe:3, portrait:'portrait_normal.png'},
-    {hp:12, maxHp:12, san:43, maxSan:45, pe:3, portrait:'portrait_normal.png'},
-    {hp:12, maxHp:12, san:43, maxSan:45, pe:3, portrait:'portrait_normal.png'},
-    {hp:12, maxHp:12, san:43, maxSan:45, pe:3, portrait:'portrait_normal.png'},
-    {hp:12, maxHp:12, san:43, maxSan:45, pe:3, portrait:'portrait_normal.png'},
-  ];
+  const configToggle = document.querySelector('.config-toggle');
+  const configMenu = document.getElementById('configMenu');
+  const portraitImg = document.getElementById('portrait');
 
-  let currentPlayer = 0;
+  // Portrait States
+  let portraits = { normal: '', fear: '', dead: '' };
+  let currentState = 'normal';
 
-  function selectPlayer(index){
-    currentPlayer = index;
-    updateOverlay();
+  // Carregar do localStorage
+  if(localStorage.getItem('overlayData')){
+    const data = JSON.parse(localStorage.getItem('overlayData'));
+    portraits = data.portraits || portraits;
+    currentState = data.currentState || 'normal';
+    document.getElementById('vidaMax').value = data.vidaMax || 20;
+    document.getElementById('sanidadeMax').value = data.sanidadeMax || 20;
+    document.getElementById('peMax').value = data.peMax || 5;
+    document.getElementById('vidaAtual').value = data.vidaAtual || data.vidaMax || 20;
+    document.getElementById('sanidadeAtual').value = data.sanidadeAtual || data.sanidadeMax || 20;
+    document.getElementById('peAtual').value = data.peAtual || data.peMax || 5;
   }
 
-  function changeStat(stat, amount){
-    const p = players[currentPlayer];
-    if(stat === 'hp'){
-      p.hp += amount;
-      if(p.hp < 0) p.hp = 0;
-      if(p.hp > p.maxHp) p.hp = p.maxHp;
-    } else if(stat === 'san'){
-      p.san += amount;
-      if(p.san < 0) p.san = 0;
-      if(p.san > p.maxSan) p.san = p.maxSan;
-    } else if(stat === 'pe'){
-      p.pe += amount;
-      if(p.pe < 0) p.pe = 0;
+  function saveData() {
+    localStorage.setItem('overlayData', JSON.stringify({
+      portraits, currentState,
+      vidaMax: document.getElementById('vidaMax').value,
+      sanidadeMax: document.getElementById('sanidadeMax').value,
+      peMax: document.getElementById('peMax').value,
+      vidaAtual: document.getElementById('vidaAtual').value,
+      sanidadeAtual: document.getElementById('sanidadeAtual').value,
+      peAtual: document.getElementById('peAtual').value
+    }));
+  }
+
+  function updatePortrait(fileInput, state) {
+    const file = fileInput.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      portraits[state] = reader.result;
+      if(currentState === state) portraitImg.src = portraits[state];
+      saveData();
     }
-    updateOverlay();
+    reader.readAsDataURL(file);
   }
 
-  function changePortrait(state){
-    const p = players[currentPlayer];
-    p.portrait = 'portrait_' + state + '.png';
-    updateOverlay();
+  document.getElementById('portraitNormal').addEventListener('change', e => updatePortrait(e.target, 'normal'));
+  document.getElementById('portraitFear').addEventListener('change', e => updatePortrait(e.target, 'fear'));
+  document.getElementById('portraitDead').addEventListener('change', e => updatePortrait(e.target, 'dead'));
+
+  function setPortraitState(state) {
+    currentState = state;
+    if(portraits[state]) portraitImg.src = portraits[state];
+    saveData();
   }
 
-  function loadPortrait(event){
-    const file = event.target.files[0];
-    if(file){
-      const reader = new FileReader();
-      reader.onload = function(e){
-        players[currentPlayer].portrait = e.target.result;
-        updateOverlay();
-      };
-      reader.readAsDataURL(file);
-    }
+  function updateValues() {
+    const vidaMax = parseInt(document.getElementById('vidaMax').value);
+    const sanidadeMax = parseInt(document.getElementById('sanidadeMax').value);
+    const peMax = parseInt(document.getElementById('peMax').value);
+    let vidaAtual = parseInt(document.getElementById('vidaAtual').value);
+    let sanidadeAtual = parseInt(document.getElementById('sanidadeAtual').value);
+    let peAtual = parseInt(document.getElementById('peAtual').value);
+
+    if(vidaAtual > vidaMax) vidaAtual = vidaMax;
+    if(sanidadeAtual > sanidadeMax) sanidadeAtual = sanidadeMax;
+    if(peAtual > peMax) peAtual = peMax;
+
+    document.getElementById('vidaAtual').value = vidaAtual;
+    document.getElementById('sanidadeAtual').value = sanidadeAtual;
+    document.getElementById('peAtual').value = peAtual;
+
+    document.getElementById('vida').textContent = `Vida: ${vidaAtual}/${vidaMax}`;
+    document.getElementById('sanidade').textContent = `Sanidade: ${sanidadeAtual}/${sanidadeMax}`;
+    document.getElementById('pe').textContent = `PE: ${peAtual}/${peMax}`;
+
+    saveData();
   }
 
-  function updateOverlay(){
-    const p = players[currentPlayer];
-    document.getElementById('portrait').src = p.portrait;
-    document.querySelector('.stat.hp').innerText = `${p.hp}/${p.maxHp}`;
-    document.querySelector('.stat.san').innerText = `${p.san}/${p.maxSan}`;
-    document.querySelector('.pe').innerText = `PE: ${p.pe}`;
-  }
+  configToggle.addEventListener('click', () => {
+    configMenu.style.display = configMenu.style.display === 'flex' ? 'none' : 'flex';
+  });
 
-  updateOverlay();
+  // Inicializa valores na tela
+  updateValues();
+  setPortraitState(currentState);
 </script>
+
 </body>
 </html>
