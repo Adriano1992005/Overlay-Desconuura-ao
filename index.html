@@ -13,48 +13,53 @@
     overflow: hidden;
   }
 
-  #overlay {
-    position: relative;
-    width: 250px;
+  #overlay-container {
+    width: 400px;
     margin: 20px auto;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    position: relative;
   }
 
-  /* Portrait PNG estilo Desconjuração */
+  /* Portrait estilo Desconjuração */
   #portrait {
-    width: 200px;
-    height: 200px;
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
     object-fit: cover;
-    border-radius: 12px;
+    border: 3px solid #000;
+    margin-right: 15px;
+    background: #111;
     cursor: pointer;
-    transition: 0.3s;
   }
 
-  /* Números neon (HP e SAN) */
-  .neon {
-    font-size: 36px;
-    font-weight: bold;
-    color: #0ff;
-    text-shadow:
-      0 0 5px #0ff,
-      0 0 10px #0ff,
-      0 0 20px #0ff,
-      0 0 40px #0ff;
-    margin: 5px 0;
+  /* Stats neon/sangrento à direita */
+  .stats {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
 
-  .stat-label {
-    font-size: 14px;
-    color: #aaa;
-    display: block;
-    margin-bottom: 2px;
-  }
-
-  /* PE simples */
-  .pe {
+  .stat {
     font-size: 28px;
+    font-weight: bold;
+    text-shadow:
+      0 0 3px #ff0000,
+      0 0 5px #ff0000,
+      0 0 10px #ff5555;
+    margin: 2px 0;
+    text-align: right;
+  }
+
+  .stat.hp { color: #ff5555; } /* Vida */
+  .stat.san { color: #55ffff; } /* Sanidade */
+
+  /* PE simples embaixo */
+  .pe {
+    font-size: 20px;
     color: #ffcc00;
-    margin: 5px 0;
+    text-align: right;
   }
 
   /* Menu de configurações */
@@ -62,7 +67,7 @@
     position: absolute;
     top: 10px;
     right: 10px;
-    background: rgba(0,0,0,0.6);
+    background: rgba(0,0,0,0.7);
     padding: 10px;
     border-radius: 10px;
     z-index: 10;
@@ -77,33 +82,34 @@
     background: #222;
     color: #0ff;
   }
+
+  #menu input[type="file"] {
+    display: none;
+  }
 </style>
 </head>
 <body>
 
-<div id="overlay">
-  <!-- Portrait PNG estilo Desconjuração -->
+<!-- Jogador Selector -->
+<div id="player-selector" style="text-align:center; margin-bottom:10px;">
+  <strong>Selecionar Jogador:</strong>
+  <button onclick="selectPlayer(0)" style="background:#ff5555;color:#fff;">Jogador 1</button>
+  <button onclick="selectPlayer(1)" style="background:#55ff55;color:#000;">Jogador 2</button>
+  <button onclick="selectPlayer(2)" style="background:#5555ff;color:#fff;">Jogador 3</button>
+  <button onclick="selectPlayer(3)" style="background:#ff55ff;color:#000;">Jogador 4</button>
+  <button onclick="selectPlayer(4)" style="background:#ffaa00;color:#000;">Jogador 5</button>
+</div>
+
+<div id="overlay-container">
   <img id="portrait" src="portrait_normal.png" alt="Portrait do Jogador">
-
-  <!-- HP Neon -->
-  <div class="neon">
-    <span class="stat-label">HP</span>
-    <span id="hp">10</span>
-  </div>
-
-  <!-- SAN Neon -->
-  <div class="neon">
-    <span class="stat-label">SAN</span>
-    <span id="san">10</span>
-  </div>
-
-  <!-- PE simples -->
-  <div class="pe">
-    PE: <span id="pe">3</span>
+  <div class="stats">
+    <div class="stat hp">12/12</div>
+    <div class="stat san">43/45</div>
+    <div class="pe">PE: 3</div>
   </div>
 </div>
 
-<!-- Menu de configurações -->
+<!-- Menu -->
 <div id="menu">
   <strong>Configurações</strong><br>
   <button onclick="changeStat('hp',1)">+HP</button>
@@ -112,32 +118,74 @@
   <button onclick="changeStat('san',-1)">-SAN</button><br>
   <button onclick="changeStat('pe',1)">+PE</button>
   <button onclick="changeStat('pe',-1)">-PE</button><br>
+  <button onclick="document.getElementById('portraitInput').click()">Carregar Portrait</button>
+  <input type="file" id="portraitInput" accept="image/*" onchange="loadPortrait(event)">
+  <br>
   <button onclick="changePortrait('normal')">Normal</button>
   <button onclick="changePortrait('medo')">Medo</button>
   <button onclick="changePortrait('morrendo')">Morrendo</button>
 </div>
 
 <script>
-  const stats = {hp:10, san:10, pe:3};
-  const portraitStates = ['normal','medo','morrendo'];
+  const players = [
+    {hp:12, maxHp:12, san:43, maxSan:45, pe:3, portrait:'portrait_normal.png'},
+    {hp:12, maxHp:12, san:43, maxSan:45, pe:3, portrait:'portrait_normal.png'},
+    {hp:12, maxHp:12, san:43, maxSan:45, pe:3, portrait:'portrait_normal.png'},
+    {hp:12, maxHp:12, san:43, maxSan:45, pe:3, portrait:'portrait_normal.png'},
+    {hp:12, maxHp:12, san:43, maxSan:45, pe:3, portrait:'portrait_normal.png'},
+  ];
+
+  let currentPlayer = 0;
+
+  function selectPlayer(index){
+    currentPlayer = index;
+    updateOverlay();
+  }
 
   function changeStat(stat, amount){
-    stats[stat] += amount;
-    if(stats[stat] < 0) stats[stat] = 0;
-    document.getElementById(stat).innerText = stats[stat];
+    const p = players[currentPlayer];
+    if(stat === 'hp'){
+      p.hp += amount;
+      if(p.hp < 0) p.hp = 0;
+      if(p.hp > p.maxHp) p.hp = p.maxHp;
+    } else if(stat === 'san'){
+      p.san += amount;
+      if(p.san < 0) p.san = 0;
+      if(p.san > p.maxSan) p.san = p.maxSan;
+    } else if(stat === 'pe'){
+      p.pe += amount;
+      if(p.pe < 0) p.pe = 0;
+    }
+    updateOverlay();
   }
 
   function changePortrait(state){
-    document.getElementById('portrait').src = 'portrait_' + state + '.png';
+    const p = players[currentPlayer];
+    p.portrait = 'portrait_' + state + '.png';
+    updateOverlay();
   }
 
-  // Clicar na portrait alterna entre os estados
-  let currentPortraitIndex = 0;
-  document.getElementById('portrait').addEventListener('click', ()=>{
-    currentPortraitIndex = (currentPortraitIndex+1)%portraitStates.length;
-    changePortrait(portraitStates[currentPortraitIndex]);
-  });
-</script>
+  function loadPortrait(event){
+    const file = event.target.files[0];
+    if(file){
+      const reader = new FileReader();
+      reader.onload = function(e){
+        players[currentPlayer].portrait = e.target.result;
+        updateOverlay();
+      };
+      reader.readAsDataURL(file);
+    }
+  }
 
+  function updateOverlay(){
+    const p = players[currentPlayer];
+    document.getElementById('portrait').src = p.portrait;
+    document.querySelector('.stat.hp').innerText = `${p.hp}/${p.maxHp}`;
+    document.querySelector('.stat.san').innerText = `${p.san}/${p.maxSan}`;
+    document.querySelector('.pe').innerText = `PE: ${p.pe}`;
+  }
+
+  updateOverlay();
+</script>
 </body>
 </html>
