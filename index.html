@@ -7,7 +7,7 @@
   html, body {
     margin: 0;
     padding: 0;
-    background: transparent; /* OBS friendly */
+    background: transparent; /* OBS-friendly */
     font-family: 'Courier New', monospace;
     color: #fff;
     overflow: hidden;
@@ -20,41 +20,41 @@
     text-align: center;
   }
 
-  /* Portrait com borda neon */
+  /* Portrait PNG estilo Desconjuração */
   #portrait {
     width: 200px;
     height: 200px;
-    border-radius: 12px;
     object-fit: cover;
-    border: 3px solid #ff0000;
-    box-shadow: 0 0 15px #ff0000, 0 0 30px #ff0000;
+    border-radius: 12px;
     cursor: pointer;
     transition: 0.3s;
   }
 
-  #portrait:hover {
-    box-shadow: 0 0 25px #ff0000, 0 0 50px #ff0000;
-  }
-
-  /* Números neon e sangrentos */
-  .stat {
-    font-size: 32px;
+  /* Números neon (HP e SAN) */
+  .neon {
+    font-size: 36px;
     font-weight: bold;
-    color: #ff0000;
+    color: #0ff;
     text-shadow:
-      0 0 5px #ff0000,
-      0 0 10px #ff0000,
-      0 0 20px #ff0000,
-      0 0 40px #ff0000,
-      0 0 80px #ff0000;
+      0 0 5px #0ff,
+      0 0 10px #0ff,
+      0 0 20px #0ff,
+      0 0 40px #0ff;
     margin: 5px 0;
   }
 
   .stat-label {
     font-size: 14px;
-    color: #ff5555;
+    color: #aaa;
     display: block;
     margin-bottom: 2px;
+  }
+
+  /* PE simples */
+  .pe {
+    font-size: 28px;
+    color: #ffcc00;
+    margin: 5px 0;
   }
 
   /* Menu de configurações */
@@ -75,29 +75,35 @@
     border: none;
     cursor: pointer;
     background: #222;
-    color: #ff4444;
+    color: #0ff;
   }
 </style>
 </head>
 <body>
 
 <div id="overlay">
-  <img id="portrait" src="normal.jpg" alt="Portrait do Jogador">
-  <div class="stat">
+  <!-- Portrait PNG estilo Desconjuração -->
+  <img id="portrait" src="portrait_normal.png" alt="Portrait do Jogador">
+
+  <!-- HP Neon -->
+  <div class="neon">
     <span class="stat-label">HP</span>
     <span id="hp">10</span>
   </div>
-  <div class="stat">
+
+  <!-- SAN Neon -->
+  <div class="neon">
     <span class="stat-label">SAN</span>
     <span id="san">10</span>
   </div>
-  <div class="stat">
-    <span class="stat-label">PE</span>
-    <span id="pe">3</span>
+
+  <!-- PE simples -->
+  <div class="pe">
+    PE: <span id="pe">3</span>
   </div>
 </div>
 
-<!-- Menu de configurações (visível apenas no site) -->
+<!-- Menu de configurações -->
 <div id="menu">
   <strong>Configurações</strong><br>
   <button onclick="changeStat('hp',1)">+HP</button>
@@ -122,7 +128,7 @@
   }
 
   function changePortrait(state){
-    document.getElementById('portrait').src = state+'.jpg';
+    document.getElementById('portrait').src = 'portrait_' + state + '.png';
   }
 
   // Clicar na portrait alterna entre os estados
