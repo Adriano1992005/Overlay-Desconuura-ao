@@ -68,9 +68,10 @@
     }
     .controls {
       margin-top: 10px;
+      text-align: center;
     }
     .controls button {
-      margin-right: 5px;
+      margin: 5px;
       padding: 5px 10px;
       background: rgba(255,255,255,0.1);
       border: none;
@@ -81,6 +82,7 @@
   </style>
 </head>
 <body>
+  <!-- Menu inicial -->
   <div id="menu" class="menu">
     <h1>Escolha seu Jogador</h1>
     <button onclick="enter(1)">Jogador 1</button>
@@ -90,6 +92,7 @@
     <button onclick="enter(5)">Jogador 5</button>
   </div>
 
+  <!-- Overlay do jogador -->
   <div id="overlay" style="display:none;">
     <div class="player">
       <div class="portrait">
@@ -102,8 +105,13 @@
       <div class="controls">
         Vida: <button onclick="change('vida', -1)">-</button><button onclick="change('vida', 1)">+</button>
         Sanidade: <button onclick="change('sanidade', -1)">-</button><button onclick="change('sanidade', 1)">+</button>
-        <br>
-        <input type="file" id="fileInput" onchange="uploadPortrait(event)">
+        <br><br>
+        <label>Portrait Normal <input type="file" onchange="uploadPortrait(event,'normal')"></label><br>
+        <label>Portrait Medo <input type="file" onchange="uploadPortrait(event,'medo')"></label><br>
+        <label>Portrait Morrendo <input type="file" onchange="uploadPortrait(event,'morrendo')"></label><br><br>
+        <button onclick="setPortrait('normal')">Normal</button>
+        <button onclick="setPortrait('medo')">Medo</button>
+        <button onclick="setPortrait('morrendo')">Morrendo</button>
       </div>
     </div>
   </div>
@@ -140,22 +148,31 @@
       save(id, val);
     }
 
-    function uploadPortrait(event) {
+    function uploadPortrait(event, type) {
       const file = event.target.files[0];
       if (!file) return;
       const reader = new FileReader();
       reader.onload = e => {
-        document.getElementById("portrait").src = e.target.result;
-        save("portrait", e.target.result);
+        save("portrait_" + type, e.target.result);
+        setPortrait(type);
       };
       reader.readAsDataURL(file);
     }
 
+    function setPortrait(type) {
+      const src = load("portrait_" + type, "https://via.placeholder.com/300x200.png?text=Portrait");
+      document.getElementById("portrait").src = src;
+      save("currentPortrait", type);
+    }
+
+    // carregar dados salvos
     window.onload = () => {
       if (!playerId) return;
       document.getElementById("vida").textContent = load("vida", 10);
       document.getElementById("sanidade").textContent = load("sanidade", 10);
-      document.getElementById("portrait").src = load("portrait", "https://via.placeholder.com/300x200.png?text=Portrait");
+
+      const currentType = load("currentPortrait", "normal");
+      setPortrait(currentType);
     }
   </script>
 </body>
