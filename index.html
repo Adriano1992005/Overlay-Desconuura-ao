@@ -1,157 +1,167 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Overlay RPG Ordem Paranormal</title>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: #fff;
+    text-align: center;
+  }
 
-export default function Overlay() {
-  const [vida, setVida] = useState(100);
-  const [sanidade, setSanidade] = useState(100);
-  const [portrait, setPortrait] = useState("normal");
-  const [portraits, setPortraits] = useState({ normal: "", medo: "", morte: "" });
-  const [showConfig, setShowConfig] = useState(false);
+  #playerSelector {
+    margin: 20px 0;
+  }
 
-  useEffect(() => {
-    // Carregar configs do localStorage
-    const savedVida = localStorage.getItem("vida");
-    const savedSanidade = localStorage.getItem("sanidade");
-    const savedPortraits = localStorage.getItem("portraits");
-    const savedPortrait = localStorage.getItem("portrait");
-    if (savedVida) setVida(Number(savedVida));
-    if (savedSanidade) setSanidade(Number(savedSanidade));
-    if (savedPortraits) setPortraits(JSON.parse(savedPortraits));
-    if (savedPortrait) setPortrait(savedPortrait);
-  }, []);
+  button.selectPlayer {
+    margin: 2px;
+    padding: 6px 12px;
+    font-size: 14px;
+  }
 
-  useEffect(() => {
-    // Salvar configs no localStorage
-    localStorage.setItem("vida", vida);
-    localStorage.setItem("sanidade", sanidade);
-    localStorage.setItem("portraits", JSON.stringify(portraits));
-    localStorage.setItem("portrait", portrait);
-  }, [vida, sanidade, portraits, portrait]);
+  #overlay {
+    display: inline-block;
+    width: 250px;
+    border: 2px solid #444;
+    border-radius: 10px;
+    padding: 10px;
+    background: #222;
+    text-align: center;
+  }
 
-  const handleImageUpload = (e, type) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPortraits((prev) => ({ ...prev, [type]: reader.result }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+  #portrait {
+    width: 200px;
+    height: 200px;
+    border-radius: 10px;
+    cursor: pointer;
+    object-fit: cover;
+  }
 
-  const handleURLUpload = (url, type) => {
-    setPortraits((prev) => ({ ...prev, [type]: url }));
-  };
+  .stats {
+    margin-top: 10px;
+    font-size: 18px;
+  }
 
-  // Detectar se está no OBS (Browser Source)
-  const isOBS = window.navigator.userAgent.includes("OBS");
+  .pe {
+    margin-top: 5px;
+    font-size: 12px;
+    color: #ffcc00;
+  }
 
-  // Atalhos de teclado para trocar portraits
-  useEffect(() => {
-    const handleKey = (e) => {
-      if (e.key === '1') setPortrait('normal');
-      if (e.key === '2') setPortrait('medo');
-      if (e.key === '3') setPortrait('morte');
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, []);
+  #controls {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+  }
 
-  return (
-    <div className="w-screen h-screen bg-transparent flex items-center justify-center">
-      {/* Portrait */}
-      {portraits[portrait] && (
-        <motion.img
-          key={portrait}
-          src={portraits[portrait]}
-          alt="Portrait"
-          className="w-40 h-40 object-contain bg-transparent drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        />
-      )}
+  .control-group {
+    margin: 5px;
+  }
 
-      {/* Status */}
-      <div className="flex flex-col ml-6">
-        <span className="text-5xl font-normal text-white [text-shadow:_0_0_10px_#ff0000,0_0_20px_#ff0000]">
-          {vida}
-        </span>
-        <span className="text-5xl font-normal text-white [text-shadow:_0_0_10px_#00c3ff,0_0_20px_#00c3ff]">
-          {sanidade}
-        </span>
-      </div>
+  button {
+    margin: 2px;
+    padding: 4px 8px;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
 
-      {/* Configurações (visível só fora do OBS) */}
-      {!isOBS && (
-        <>
-          <button
-            className="absolute top-4 right-4 bg-black/70 text-white px-3 py-1 rounded-lg"
-            onClick={() => setShowConfig(!showConfig)}
-          >
-            ⚙ Configurações
-          </button>
+<h2>Overlay RPG - Ordem Paranormal</h2>
 
-          {showConfig && (
-            <div className="absolute top-0 right-0 w-80 h-full bg-black/90 text-white p-4 overflow-y-auto">
-              <h2 className="text-xl mb-2">Configurações</h2>
+<div id="playerSelector">
+  <strong>Selecionar Jogador:</strong>
+  <button class="selectPlayer" onclick="selectPlayer(0)">Jogador 1</button>
+  <button class="selectPlayer" onclick="selectPlayer(1)">Jogador 2</button>
+  <button class="selectPlayer" onclick="selectPlayer(2)">Jogador 3</button>
+  <button class="selectPlayer" onclick="selectPlayer(3)">Jogador 4</button>
+  <button class="selectPlayer" onclick="selectPlayer(4)">Jogador 5</button>
+</div>
 
-              <div className="mb-4">
-                <label>Vida:</label>
-                <input
-                  type="number"
-                  value={vida}
-                  onChange={(e) => setVida(Number(e.target.value))}
-                  className="w-full p-1 text-black"
-                />
-              </div>
-
-              <div className="mb-4">
-                <label>Sanidade:</label>
-                <input
-                  type="number"
-                  value={sanidade}
-                  onChange={(e) => setSanidade(Number(e.target.value))}
-                  className="w-full p-1 text-black"
-                />
-              </div>
-
-              {['normal', 'medo', 'morte'].map((type) => (
-                <div key={type} className="mb-4">
-                  <label>Portrait {type.charAt(0).toUpperCase() + type.slice(1)} (Upload ou URL):</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleImageUpload(e, type)}
-                    className="w-full mb-1"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Cole a URL da imagem"
-                    onBlur={(e) => handleURLUpload(e.target.value, type)}
-                    className="w-full p-1 text-black"
-                  />
-                </div>
-              ))}
-
-              <div className="mb-4">
-                <label>Selecionar Variação:</label>
-                <select
-                  value={portrait}
-                  onChange={(e) => setPortrait(e.target.value)}
-                  className="w-full p-1 text-black"
-                >
-                  <option value="normal">Normal</option>
-                  <option value="medo">Medo</option>
-                  <option value="morte">Morte</option>
-                </select>
-              </div>
-
-              <p className="text-sm">Atalhos de teclado: 1=Normal, 2=Medo, 3=Morte</p>
-            </div>
-          )}
-        </>
-      )}
+<div id="overlay">
+  <img id="portrait" src="normal.jpg" alt="Portrait do Jogador">
+  <div class="stats">
+    HP: <span id="hp">10</span> | SAN: <span id="san">10</span>
+  </div>
+  <div class="pe">
+    PE: <span id="pe">3</span>
+  </div>
+  <div id="controls">
+    <div class="control-group">
+      <strong>HP</strong><br>
+      <button onclick="changeStat('hp',1)">+1</button>
+      <button onclick="changeStat('hp',-1)">-1</button>
     </div>
-  );
-}
+    <div class="control-group">
+      <strong>SAN</strong><br>
+      <button onclick="changeStat('san',1)">+1</button>
+      <button onclick="changeStat('san',-1)">-1</button>
+    </div>
+    <div class="control-group">
+      <strong>PE</strong><br>
+      <button onclick="changeStat('pe',1)">+1</button>
+      <button onclick="changeStat('pe',-1)">-1</button>
+    </div>
+    <div class="control-group">
+      <strong>Portrait</strong><br>
+      <button onclick="changePortrait('normal')">Normal</button>
+      <button onclick="changePortrait('medo')">Medo</button>
+      <button onclick="changePortrait('morrendo')">Morrendo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Dados de 5 jogadores
+  const players = [
+    {hp:10, san:10, pe:3, portrait:'normal'},
+    {hp:10, san:10, pe:3, portrait:'normal'},
+    {hp:10, san:10, pe:3, portrait:'normal'},
+    {hp:10, san:10, pe:3, portrait:'normal'},
+    {hp:10, san:10, pe:3, portrait:'normal'}
+  ];
+
+  let currentPlayer = 0;
+  const portraitStates = ['normal', 'medo', 'morrendo'];
+
+  function selectPlayer(index) {
+    currentPlayer = index;
+    updateOverlay();
+  }
+
+  function changeStat(stat, amount) {
+    players[currentPlayer][stat] += amount;
+    if (players[currentPlayer][stat] < 0) players[currentPlayer][stat] = 0;
+    updateOverlay();
+  }
+
+  function changePortrait(state) {
+    players[currentPlayer].portrait = state;
+    updateOverlay();
+  }
+
+  // Clicar no portrait alterna entre os estados
+  document.getElementById('portrait').addEventListener('click', () => {
+    let current = portraitStates.indexOf(players[currentPlayer].portrait);
+    current = (current + 1) % portraitStates.length;
+    players[currentPlayer].portrait = portraitStates[current];
+    updateOverlay();
+  });
+
+  function updateOverlay() {
+    document.getElementById('hp').innerText = players[currentPlayer].hp;
+    document.getElementById('san').innerText = players[currentPlayer].san;
+    document.getElementById('pe').innerText = players[currentPlayer].pe;
+    document.getElementById('portrait').src = players[currentPlayer].portrait + '.jpg';
+  }
+
+  // Inicializa overlay
+  updateOverlay();
+</script>
+
+</body>
+</html>
