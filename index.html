@@ -5,11 +5,7 @@ export default function Overlay() {
   const [vida, setVida] = useState(100);
   const [sanidade, setSanidade] = useState(100);
   const [portrait, setPortrait] = useState("normal");
-  const [portraits, setPortraits] = useState({
-    normal: "",
-    medo: "",
-    morte: ""
-  });
+  const [portraits, setPortraits] = useState({ normal: "", medo: "", morte: "" });
   const [showConfig, setShowConfig] = useState(false);
 
   useEffect(() => {
@@ -43,8 +39,23 @@ export default function Overlay() {
     }
   };
 
+  const handleURLUpload = (url, type) => {
+    setPortraits((prev) => ({ ...prev, [type]: url }));
+  };
+
   // Detectar se está no OBS (Browser Source)
   const isOBS = window.navigator.userAgent.includes("OBS");
+
+  // Atalhos de teclado para trocar portraits
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.key === '1') setPortrait('normal');
+      if (e.key === '2') setPortrait('medo');
+      if (e.key === '3') setPortrait('morte');
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, []);
 
   return (
     <div className="w-screen h-screen bg-transparent flex items-center justify-center">
@@ -54,7 +65,7 @@ export default function Overlay() {
           key={portrait}
           src={portraits[portrait]}
           alt="Portrait"
-          className="w-40 h-40 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]"
+          className="w-40 h-40 object-contain bg-transparent drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
@@ -63,10 +74,10 @@ export default function Overlay() {
 
       {/* Status */}
       <div className="flex flex-col ml-6">
-        <span className="text-5xl font-bold text-white [text-shadow:_0_0_10px_#ff0000,0_0_20px_#ff0000]">
+        <span className="text-5xl font-normal text-white [text-shadow:_0_0_10px_#ff0000,0_0_20px_#ff0000]">
           {vida}
         </span>
-        <span className="text-5xl font-bold text-white [text-shadow:_0_0_10px_#00c3ff,0_0_20px_#00c3ff]">
+        <span className="text-5xl font-normal text-white [text-shadow:_0_0_10px_#00c3ff,0_0_20px_#00c3ff]">
           {sanidade}
         </span>
       </div>
@@ -105,35 +116,23 @@ export default function Overlay() {
                 />
               </div>
 
-              <div className="mb-4">
-                <label>Portrait Normal:</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleImageUpload(e, "normal")}
-                  className="w-full"
-                />
-              </div>
-
-              <div className="mb-4">
-                <label>Portrait Medo:</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleImageUpload(e, "medo")}
-                  className="w-full"
-                />
-              </div>
-
-              <div className="mb-4">
-                <label>Portrait Morte:</label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleImageUpload(e, "morte")}
-                  className="w-full"
-                />
-              </div>
+              {['normal', 'medo', 'morte'].map((type) => (
+                <div key={type} className="mb-4">
+                  <label>Portrait {type.charAt(0).toUpperCase() + type.slice(1)} (Upload ou URL):</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleImageUpload(e, type)}
+                    className="w-full mb-1"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Cole a URL da imagem"
+                    onBlur={(e) => handleURLUpload(e.target.value, type)}
+                    className="w-full p-1 text-black"
+                  />
+                </div>
+              ))}
 
               <div className="mb-4">
                 <label>Selecionar Variação:</label>
@@ -147,6 +146,8 @@ export default function Overlay() {
                   <option value="morte">Morte</option>
                 </select>
               </div>
+
+              <p className="text-sm">Atalhos de teclado: 1=Normal, 2=Medo, 3=Morte</p>
             </div>
           )}
         </>
