@@ -1,188 +1,156 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <title>Overlay Desconjuração</title>
-  <!-- Fonte sangrenta -->
-  <link href="https://fonts.googleapis.com/css2?family=Nosifer&display=swap" rel="stylesheet">
-  <style>
-    body {
-      margin: 0;
-      background: transparent;
-      font-family: 'Nosifer', cursive;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-    }
-    .menu {
-      text-align: center;
-    }
-    .menu button {
-      font-family: 'Nosifer', cursive;
-      font-size: 24px;
-      padding: 10px 20px;
-      margin: 10px;
-      cursor: pointer;
-      background: black;
-      border: 2px solid red;
-      color: white;
-      border-radius: 10px;
-      text-shadow: 0 0 10px red, 0 0 20px red;
-    }
-    .player {
-      position: relative;
-      display: inline-block;
-    }
-    .portrait {
-      width: 300px;
-      height: auto;
-      background: transparent;
-    }
-    .portrait img {
-      width: 100%;
-      height: auto;
-      object-fit: contain;
-      background: transparent;
-    }
-    .stats {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
-    .stat {
-      font-size: 48px;
-      font-weight: normal;
-      color: white;
-      line-height: 1;
-    }
-    .vida {
-      text-shadow: 0 0 10px red, 0 0 25px red, 0 0 50px red;
-    }
-    .sanidade {
-      text-shadow: 0 0 10px #00b7ff, 0 0 25px #00b7ff, 0 0 50px #00b7ff;
-    }
-    .controls {
-      margin-top: 15px;
-      text-align: center;
-      display: none; /* 🔴 Esconde os botões no OBS */
-    }
-    body.controls-active .controls {
-      display: block; /* 🔓 Só aparece se ativar manualmente no navegador */
-    }
-    .controls button, .controls input {
-      margin: 5px;
-      padding: 5px 10px;
-      background: rgba(255,255,255,0.1);
-      border: none;
-      color: white;
-      cursor: pointer;
-      border-radius: 6px;
-    }
-  </style>
-</head>
-<body>
-  <!-- Menu inicial -->
-  <div id="menu" class="menu">
-    <h1>Escolha seu Jogador</h1>
-    <button onclick="enter(1)">Jogador 1</button>
-    <button onclick="enter(2)">Jogador 2</button>
-    <button onclick="enter(3)">Jogador 3</button>
-    <button onclick="enter(4)">Jogador 4</button>
-    <button onclick="enter(5)">Jogador 5</button>
-  </div>
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 
-  <!-- Overlay do jogador -->
-  <div id="overlay" style="display:none;">
-    <div class="player">
-      <div class="portrait">
-        <img id="portrait" src="https://via.placeholder.com/300x200.png?text=Portrait" alt="portrait">
-      </div>
-      <div class="stats">
-        <div id="vida" class="stat vida">10</div>
-        <div id="sanidade" class="stat sanidade">10</div>
-      </div>
-      <div class="controls">
-        Vida: <button onclick="change('vida', -1)">-</button><button onclick="change('vida', 1)">+</button>
-        Sanidade: <button onclick="change('sanidade', -1)">-</button><button onclick="change('sanidade', 1)">+</button>
-        <br><br>
-        <label>Portrait Normal <input type="file" onchange="uploadPortrait(event,'normal')"></label><br>
-        <label>Portrait Medo <input type="file" onchange="uploadPortrait(event,'medo')"></label><br>
-        <label>Portrait Morrendo <input type="file" onchange="uploadPortrait(event,'morrendo')"></label><br><br>
-        <button onclick="setPortrait('normal')">Normal</button>
-        <button onclick="setPortrait('medo')">Medo</button>
-        <button onclick="setPortrait('morrendo')">Morrendo</button>
-      </div>
-    </div>
-  </div>
+export default function Overlay() {
+  const [vida, setVida] = useState(100);
+  const [sanidade, setSanidade] = useState(100);
+  const [portrait, setPortrait] = useState("normal");
+  const [portraits, setPortraits] = useState({
+    normal: "",
+    medo: "",
+    morte: ""
+  });
+  const [showConfig, setShowConfig] = useState(false);
 
-  <script>
-    let playerId = null;
+  useEffect(() => {
+    // Carregar configs do localStorage
+    const savedVida = localStorage.getItem("vida");
+    const savedSanidade = localStorage.getItem("sanidade");
+    const savedPortraits = localStorage.getItem("portraits");
+    const savedPortrait = localStorage.getItem("portrait");
+    if (savedVida) setVida(Number(savedVida));
+    if (savedSanidade) setSanidade(Number(savedSanidade));
+    if (savedPortraits) setPortraits(JSON.parse(savedPortraits));
+    if (savedPortrait) setPortrait(savedPortrait);
+  }, []);
 
-    function enter(id) {
-      window.location.search = "?player=" + id;
-    }
+  useEffect(() => {
+    // Salvar configs no localStorage
+    localStorage.setItem("vida", vida);
+    localStorage.setItem("sanidade", sanidade);
+    localStorage.setItem("portraits", JSON.stringify(portraits));
+    localStorage.setItem("portrait", portrait);
+  }, [vida, sanidade, portraits, portrait]);
 
-    const params = new URLSearchParams(window.location.search);
-    if (params.has("player")) {
-      playerId = params.get("player");
-      document.getElementById("menu").style.display = "none";
-      document.getElementById("overlay").style.display = "block";
-
-      // Ativa controles se acessar pelo navegador com hash #controls
-      if (window.location.hash === "#controls") {
-        document.body.classList.add("controls-active");
-      }
-    }
-
-    function save(key, value) {
-      if (!playerId) return;
-      localStorage.setItem(playerId + "_" + key, value);
-    }
-
-    function load(key, def) {
-      if (!playerId) return def;
-      return localStorage.getItem(playerId + "_" + key) || def;
-    }
-
-    function change(id, delta) {
-      const el = document.getElementById(id);
-      let val = parseInt(el.textContent) + delta;
-      if (val < 0) val = 0;
-      el.textContent = val;
-      save(id, val);
-    }
-
-    function uploadPortrait(event, type) {
-      const file = event.target.files[0];
-      if (!file) return;
+  const handleImageUpload = (e, type) => {
+    const file = e.target.files[0];
+    if (file) {
       const reader = new FileReader();
-      reader.onload = e => {
-        save("portrait_" + type, e.target.result);
-        setPortrait(type);
+      reader.onloadend = () => {
+        setPortraits((prev) => ({ ...prev, [type]: reader.result }));
       };
       reader.readAsDataURL(file);
     }
+  };
 
-    function setPortrait(type) {
-      const src = load("portrait_" + type, "https://via.placeholder.com/300x200.png?text=Portrait");
-      document.getElementById("portrait").src = src;
-      save("currentPortrait", type);
-    }
+  // Detectar se está no OBS (Browser Source)
+  const isOBS = window.navigator.userAgent.includes("OBS");
 
-    // carregar dados salvos
-    window.onload = () => {
-      if (!playerId) return;
-      document.getElementById("vida").textContent = load("vida", 10);
-      document.getElementById("sanidade").textContent = load("sanidade", 10);
+  return (
+    <div className="w-screen h-screen bg-transparent flex items-center justify-center">
+      {/* Portrait */}
+      {portraits[portrait] && (
+        <motion.img
+          key={portrait}
+          src={portraits[portrait]}
+          alt="Portrait"
+          className="w-40 h-40 object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        />
+      )}
 
-      const currentType = load("currentPortrait", "normal");
-      setPortrait(currentType);
-    }
-  </script>
-</body>
-</html>
+      {/* Status */}
+      <div className="flex flex-col ml-6">
+        <span className="text-5xl font-bold text-white [text-shadow:_0_0_10px_#ff0000,0_0_20px_#ff0000]">
+          {vida}
+        </span>
+        <span className="text-5xl font-bold text-white [text-shadow:_0_0_10px_#00c3ff,0_0_20px_#00c3ff]">
+          {sanidade}
+        </span>
+      </div>
+
+      {/* Configurações (visível só fora do OBS) */}
+      {!isOBS && (
+        <>
+          <button
+            className="absolute top-4 right-4 bg-black/70 text-white px-3 py-1 rounded-lg"
+            onClick={() => setShowConfig(!showConfig)}
+          >
+            ⚙ Configurações
+          </button>
+
+          {showConfig && (
+            <div className="absolute top-0 right-0 w-80 h-full bg-black/90 text-white p-4 overflow-y-auto">
+              <h2 className="text-xl mb-2">Configurações</h2>
+
+              <div className="mb-4">
+                <label>Vida:</label>
+                <input
+                  type="number"
+                  value={vida}
+                  onChange={(e) => setVida(Number(e.target.value))}
+                  className="w-full p-1 text-black"
+                />
+              </div>
+
+              <div className="mb-4">
+                <label>Sanidade:</label>
+                <input
+                  type="number"
+                  value={sanidade}
+                  onChange={(e) => setSanidade(Number(e.target.value))}
+                  className="w-full p-1 text-black"
+                />
+              </div>
+
+              <div className="mb-4">
+                <label>Portrait Normal:</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(e, "normal")}
+                  className="w-full"
+                />
+              </div>
+
+              <div className="mb-4">
+                <label>Portrait Medo:</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(e, "medo")}
+                  className="w-full"
+                />
+              </div>
+
+              <div className="mb-4">
+                <label>Portrait Morte:</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageUpload(e, "morte")}
+                  className="w-full"
+                />
+              </div>
+
+              <div className="mb-4">
+                <label>Selecionar Variação:</label>
+                <select
+                  value={portrait}
+                  onChange={(e) => setPortrait(e.target.value)}
+                  className="w-full p-1 text-black"
+                >
+                  <option value="normal">Normal</option>
+                  <option value="medo">Medo</option>
+                  <option value="morte">Morte</option>
+                </select>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
